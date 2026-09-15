@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17120D">
+<title>Hitman BTT Scorecard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+<style>
+  :root{--bg:#17120D;--panel:#1f1913;--ink:#EDE6D8;--muted:#A89C8B;--rule:#453C31;--amber:#E0A33E;--ok:#3fae5a;--bad:#ff8c84;--resin:#7fb3ff;--rosin:#e0a33e;
+    --mono:"IBM Plex Mono",Menlo,monospace;--wordmark:"Anton",Impact,"Arial Narrow",sans-serif}
+  *{box-sizing:border-box} html{color-scheme:dark}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+  .app{max-width:560px;margin:0 auto;padding:14px 14px 90px;display:grid;gap:12px}
+  header{border-top:5px solid var(--ink);padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+  header .t{font-family:var(--wordmark);text-transform:uppercase;font-size:26px;letter-spacing:.04em;line-height:1}
+  header .t b{color:var(--amber);font-weight:400}
+  header .who{text-align:right;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  header .who b{display:block;color:var(--ink);font-size:13px}
+  .card{background:var(--panel);border:2px solid var(--rule);border-radius:6px;padding:16px}
+  .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  h1{font-family:var(--wordmark);font-weight:400;text-transform:uppercase;font-size:34px;line-height:1;margin:6px 0 10px;letter-spacing:.02em}
+  h1 b{color:var(--amber);font-weight:400}
+  p{margin:0 0 10px}
+  input[type=text],textarea{width:100%;background:transparent;border:2px solid var(--rule);border-radius:4px;color:var(--ink);font:600 16px var(--mono);padding:12px;letter-spacing:.06em}
+  input[type=text]{text-transform:uppercase}
+  textarea{font-weight:400;font-size:15px;letter-spacing:0;min-height:64px;resize:vertical}
+  input:focus,textarea:focus{outline:none;border-color:var(--amber)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;background:var(--amber);color:#17120D;border:0;font:700 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:14px 20px;border-radius:4px;cursor:pointer;width:100%}
+  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--rule)}
+  .btn:disabled{opacity:.45;cursor:default}
+  .err{color:var(--bad);font-size:13px;margin-top:8px}
+  .progress{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .progress b{font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .bar{height:6px;background:var(--rule);border-radius:3px;overflow:hidden;margin-top:8px}
+  .bar i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s}
+  .entries{display:grid;gap:8px}
+  .entry{background:var(--panel);border:2px solid var(--rule);border-radius:6px;padding:14px;display:grid;gap:10px}
+  .entry.done{border-color:#2f6b3e}
+  .entry .head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .entry .num{font-family:var(--wordmark);font-size:30px;letter-spacing:.04em;line-height:1}
+  .entry .num small{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);display:block;margin-bottom:2px}
+  .entry .state{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .entry.done .state{color:var(--ok)}
+  .scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+  .scale button{aspect-ratio:1;border:2px solid var(--rule);background:transparent;color:var(--ink);font:700 14px var(--mono);border-radius:4px;cursor:pointer;padding:0}
+  .scale button.on{background:var(--amber);border-color:var(--amber);color:#17120D}
+  .scale-lbl{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .method{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .method button{border:2px solid var(--rule);background:transparent;color:var(--ink);font:700 13px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:14px 6px;border-radius:4px;cursor:pointer}
+  .method button.resin.on{background:var(--resin);border-color:var(--resin);color:#17120D}
+  .method button.rosin.on{background:var(--rosin);border-color:var(--rosin);color:#17120D}
+  .foot{position:fixed;left:0;right:0;bottom:0;background:rgba(23,18,13,.94);border-top:2px solid var(--rule);padding:10px 14px calc(10px + env(safe-area-inset-bottom));backdrop-filter:blur(6px)}
+  .foot .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+  .foot .st{flex:1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .foot .st.off{color:var(--bad)}
+  .foot .btn{width:auto;padding:12px 18px}
+  .locked{border-color:var(--ok)}
+  .locked h1{font-size:30px}
+  details{border:2px solid var(--rule);border-radius:6px;padding:12px 14px}
+  summary{cursor:pointer;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--amber);font-weight:700}
+  .demo-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .codes{display:grid;gap:6px;margin-top:10px;font-size:13px}
+  .codes a{color:var(--amber);text-decoration:none;font-weight:600}
+  table{border-collapse:collapse;width:100%;font-size:13px} th,td{text-align:left;padding:6px 4px;border-bottom:1px solid var(--rule);vertical-align:top} th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .tally-row b{color:var(--amber)}
+  .pass{color:var(--ok);font-weight:700}
+  .keygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;margin:10px 0}
+  .keygrid label{display:flex;gap:6px;align-items:center;font-size:12px;border:1px solid var(--rule);padding:6px;border-radius:4px}
+  .keygrid select{background:var(--panel);color:var(--ink);border:1px solid var(--rule);font:12px var(--mono)}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="t">Hitman <b>Scorecard</b></div>
+    <div class="who" id="who"></div>
+  </header>
+
+  <!-- 1. Sign in with judge code -->
+  <section class="card" id="gate">
+    <div class="k">Judge sign in</div>
+    <h1>Your code is on <b>your ticket</b></h1>
+    <p>Type the judge code printed under the QR on your ticket, or open the link from your ticket email.</p>
+    <form id="gateForm">
+      <input type="text" id="code" placeholder="HBTT-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" aria-label="Judge code">
+      <div class="err" id="gateErr" hidden></div>
+      <div style="height:10px"></div>
+      <button class="btn" type="submit" id="gateBtn">Start scoring</button>
+    </form>
+  </section>
+
+  <!-- 2. Scoring -->
+  <section id="score" hidden>
+    <div class="card">
+      <div class="progress"><span>Scored</span><b id="prog">0 / 0</b></div>
+      <div class="bar"><i id="bar"></i></div>
+      <p class="k" style="margin-top:10px">Score each dab as you take it. Flavor 1 to 10. Then make the call. Everything saves as you go.</p>
+    </div>
+    <div class="entries" id="entries"></div>
+  </section>
+
+  <!-- 3. Locked -->
+  <section class="card locked" id="done" hidden>
+    <div class="k">Card submitted</div>
+    <h1>Your card is <b>in.</b></h1>
+    <p id="doneMsg">The key gets unsealed on stage at 10 PM. If every one of your calls is right, you passed the test. Nobody ever has.</p>
+    <p class="k">Keep your ticket. You will need it to claim the vault.</p>
+  </section>
+
+  <!-- Demo panel -->
+  <details id="demo" hidden>
+    <summary>Demo mode · test codes</summary>
+    <p class="demo-note">No backend is connected, so this page is scoring against a built-in list and saving on this phone only. Tap a code to sign in as that judge. The organizer view is at the bottom of the page.</p>
+    <div class="codes" id="demoCodes"></div>
+  </details>
+
+  <!-- Organizer -->
+  <details id="adminBox" hidden>
+    <summary>Organizer</summary>
+    <div id="adminGate">
+      <p class="demo-note">Enter the organizer key.</p>
+      <input type="text" id="adminKey" placeholder="organizer key" style="text-transform:none">
+      <div style="height:8px"></div>
+      <button class="btn ghost" id="adminGo" type="button">Open</button>
+    </div>
+    <div id="adminPanel" hidden>
+      <p class="k">Answer key (never leaves this phone until you tally)</p>
+      <div class="keygrid" id="keygrid"></div>
+      <button class="btn" id="tallyBtn" type="button">Tally now</button>
+      <div id="tally" style="margin-top:14px"></div>
+    </div>
+  </details>
+</div>
+
+<div class="foot" id="foot" hidden>
+  <div class="in">
+    <div class="st" id="st">Saved</div>
+    <button class="btn" id="submitBtn" type="button" disabled>Submit card</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Hitman BTT phone scorecard
+   Backend: Google Apps Script web app (Code.gs in this folder).
+   Set API to the deployed web app URL. Leave empty for demo mode.
+   In Craft (production) the same front end posts to reserve/score/*.
+   ============================================================ */
+var API = (new URLSearchParams(location.search).get('api')) || '';
+var DEMO = !API;
+
+var DEMO_TICKETS = { 'HBTT-DEMO-0001':{day:'Saturday',label:'Judge 1'}, 'HBTT-DEMO-0002':{day:'Saturday',label:'Judge 2'}, 'HBTT-DEMO-0003':{day:'Sunday',label:'Judge 3'} };
+var DEMO_CONFIG = { day:'Saturday', open:true, entries: Array.from({length:12}, function(_,i){ return {n:i+1}; }) };
+
+var $ = function(id){ return document.getElementById(id); };
+var state = { code:null, ticket:null, config:null, votes:{}, submitted:false, queue:[] };
+
+/* ---------- transport ---------- */
+async function api(action, payload, method){
+  if (DEMO) return demoApi(action, payload||{});
+  if ((method||'GET') === 'GET'){
+    var q = new URLSearchParams(Object.assign({action:action}, payload||{}));
+    var r = await fetch(API + '?' + q.toString(), {method:'GET'});
+    return r.json();
+  }
+  // text/plain keeps it a "simple" request so Apps Script answers without a preflight
+  var r2 = await fetch(API, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(Object.assign({action:action}, payload||{}))});
+  return r2.json();
+}
+function demoStore(){ try { return JSON.parse(localStorage.getItem('hbtt_sc') || '{}'); } catch(e){ return {}; } }
+function demoSave(s){ try { localStorage.setItem('hbtt_sc', JSON.stringify(s)); } catch(e){} }
+function demoApi(action, p){
+  var s = demoStore(); s.votes = s.votes || {}; s.cards = s.cards || {};
+  if (action === 'config') return DEMO_CONFIG;
+  if (action === 'ticket'){
+    var t = DEMO_TICKETS[(p.code||'').toUpperCase()];
+    if (!t) return {ok:false, error:'No judge with that code. Check the code under the QR on your ticket.'};
+    return {ok:true, day:t.day, label:t.label, submitted: !!s.cards[p.code], votes: Object.values(s.votes).filter(function(v){ return v.code === p.code; })};
+  }
+  if (action === 'vote'){ s.votes[p.code + '_' + p.n] = {code:p.code, n:p.n, flavor:p.flavor, method:p.method, notes:p.notes, at:Date.now()}; demoSave(s); return {ok:true}; }
+  if (action === 'submit'){ s.cards[p.code] = Date.now(); demoSave(s); return {ok:true}; }
+  if (action === 'tally'){
+    var votes = Object.values(s.votes); return {ok:true, votes:votes, cards:s.cards, tickets:DEMO_TICKETS};
+  }
+  return {ok:false, error:'unknown action'};
+}
+
+/* ---------- sign in ---------- */
+function fmt(v){ var r = v.toUpperCase().replace(/[^A-Z0-9]/g,''); if (r.length<=4) return r; if (r.length<=8) return r.slice(0,4)+'-'+r.slice(4); return r.slice(0,4)+'-'+r.slice(4,8)+'-'+r.slice(8,12); }
+$('code').addEventListener('input', function(e){ e.target.value = fmt(e.target.value); });
+$('gateForm').addEventListener('submit', function(e){ e.preventDefault(); signIn($('code').value); });
+
+async function signIn(code){
+  code = fmt(code || '');
+  $('gateErr').hidden = true; $('gateBtn').disabled = true; $('gateBtn').textContent = 'Checking…';
+  try{
+    var cfg = await api('config'); state.config = cfg;
+    var t = await api('ticket', {code:code});
+    if (!t.ok) throw new Error(t.error || 'That code did not work.');
+    if (!cfg.open) throw new Error('Scoring is closed right now. Doors open at noon.');
+    if (t.day && cfg.day && t.day !== cfg.day) throw new Error('This pass is for ' + t.day + '. Today is ' + cfg.day + '. Come back on your day.');
+    state.code = code; state.ticket = t; state.submitted = !!t.submitted; state.votes = {};
+    (t.votes || []).forEach(function(v){ state.votes[v.n] = v; });
+    try { localStorage.setItem('hbtt_sc_code', code); } catch(e){}
+    $('who').innerHTML = (t.label ? t.label : 'Judge') + '<b>' + code + '</b>';
+    $('gate').hidden = true;
+    if (state.submitted){ showDone(); } else { renderEntries(); $('score').hidden = false; $('foot').hidden = false; }
+  }catch(err){ $('gateErr').textContent = err.message; $('gateErr').hidden = false; }
+  finally{ $('gateBtn').disabled = false; $('gateBtn').textContent = 'Start scoring'; }
+}
+
+/* ---------- scoring ---------- */
+function renderEntries(){
+  var box = $('entries'); box.innerHTML = '';
+  state.config.entries.forEach(function(en){
+    var v = state.votes[en.n] || {};
+    var el = document.createElement('div'); el.className = 'entry' + (v.flavor && v.method ? ' done' : ''); el.dataset.n = en.n;
+    el.innerHTML =
+      '<div class="head"><div class="num"><small>Entry</small>#' + String(en.n).padStart(2,'0') + '</div><div class="state">' + (v.flavor && v.method ? 'Scored' : 'Open') + '</div></div>' +
+      '<div><div class="scale-lbl"><span>1 · trash</span><span>Flavor</span><span>10 · best ever</span></div><div class="scale">' +
+        Array.from({length:10},function(_,i){ var s=i+1; return '<button type="button" data-f="'+s+'"'+(v.flavor===s?' class="on"':'')+'>'+s+'</button>'; }).join('') + '</div></div>' +
+      '<div class="method"><button type="button" class="resin' + (v.method==='resin'?' on':'') + '" data-m="resin">Live Resin</button><button type="button" class="rosin' + (v.method==='rosin'?' on':'') + '" data-m="rosin">Live Rosin</button></div>' +
+      '<textarea placeholder="Notes on the strain" data-notes>' + (v.notes ? escapeHtml(v.notes) : '') + '</textarea>';
+    box.appendChild(el);
+  });
+  box.onclick = function(e){
+    var b = e.target.closest('button'); if (!b) return;
+    var el = b.closest('.entry'); var n = parseInt(el.dataset.n); var v = state.votes[n] = state.votes[n] || {n:n};
+    if (b.dataset.f){ v.flavor = parseInt(b.dataset.f); el.querySelectorAll('.scale button').forEach(function(x){ x.classList.toggle('on', x===b); }); }
+    if (b.dataset.m){ v.method = b.dataset.m; el.querySelectorAll('.method button').forEach(function(x){ x.classList.toggle('on', x===b); }); }
+    v.notes = el.querySelector('[data-notes]').value;
+    el.classList.toggle('done', !!(v.flavor && v.method)); el.querySelector('.state').textContent = (v.flavor && v.method) ? 'Scored' : 'Open';
+    save(n); progress();
+  };
+  var tmr;
+  box.oninput = function(e){ var ta = e.target.closest('[data-notes]'); if (!ta) return; var n = parseInt(ta.closest('.entry').dataset.n); var v = state.votes[n] = state.votes[n] || {n:n}; v.notes = ta.value; clearTimeout(tmr); tmr = setTimeout(function(){ save(n); }, 800); };
+  progress();
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function progress(){
+  var total = state.config.entries.length; var done = state.config.entries.filter(function(en){ var v = state.votes[en.n]; return v && v.flavor && v.method; }).length;
+  $('prog').textContent = done + ' / ' + total; $('bar').style.width = (total ? done/total*100 : 0) + '%';
+  $('submitBtn').disabled = done < total;
+  $('submitBtn').textContent = done < total ? ('Submit card (' + (total-done) + ' left)') : 'Submit card';
+}
+var saving = {};
+async function save(n){
+  var v = state.votes[n]; if (!v) return;
+  setStatus('Saving…');
+  try{
+    var r = await api('vote', {code:state.code, n:n, flavor:v.flavor||'', method:v.method||'', notes:v.notes||''}, 'POST');
+    if (!r.ok) throw new Error(r.error||'save failed');
+    setStatus('Saved');
+  }catch(e){
+    state.queue.push(n); setStatus('Offline · will retry', true);
+  }
+}
+async function flush(){ if (!state.queue.length || !navigator.onLine) return; var q = Array.from(new Set(state.queue)); state.queue = []; for (var i=0;i<q.length;i++) await save(q[i]); }
+setInterval(flush, 8000); window.addEventListener('online', flush);
+function setStatus(t, bad){ $('st').textContent = t; $('st').className = 'st' + (bad ? ' off' : ''); }
+
+$('submitBtn').addEventListener('click', async function(){
+  if (!confirm('Submit your card? You cannot change it after this.')) return;
+  await flush();
+  var r = await api('submit', {code:state.code}, 'POST');
+  if (!r.ok){ alert(r.error || 'Could not submit. Find a floor lead.'); return; }
+  state.submitted = true; showDone();
+});
+function showDone(){ $('score').hidden = true; $('foot').hidden = true; $('done').hidden = false; }
+
+/* ---------- organizer ---------- */
+$('adminGo').addEventListener('click', async function(){
+  var key = $('adminKey').value.trim();
+  if (DEMO ? key !== 'demo' : !key){ alert(DEMO ? 'Demo key is: demo' : 'Enter the organizer key.'); return; }
+  state.adminKey = key;
+  var cfg = state.config || await api('config'); state.config = cfg;
+  var kg = $('keygrid'); kg.innerHTML = '';
+  cfg.entries.forEach(function(en){ kg.insertAdjacentHTML('beforeend', '<label>#' + String(en.n).padStart(2,'0') + ' <select data-key="'+en.n+'"><option value="">?</option><option value="resin">Resin</option><option value="rosin">Rosin</option></select></label>'); });
+  try { var saved = JSON.parse(localStorage.getItem('hbtt_key')||'{}'); kg.querySelectorAll('select').forEach(function(s){ if (saved[s.dataset.key]) s.value = saved[s.dataset.key]; }); } catch(e){}
+  kg.onchange = function(){ var k = {}; kg.querySelectorAll('select').forEach(function(s){ if (s.value) k[s.dataset.key] = s.value; }); try { localStorage.setItem('hbtt_key', JSON.stringify(k)); } catch(e){} };
+  $('adminGate').hidden = true; $('adminPanel').hidden = false;
+});
+$('tallyBtn').addEventListener('click', async function(){
+  var key = {}; $('keygrid').querySelectorAll('select').forEach(function(s){ if (s.value) key[s.dataset.key] = s.value; });
+  var r = await api('tally', {key: state.adminKey}, DEMO ? 'GET' : 'POST');
+  if (!r.ok){ alert(r.error || 'Tally failed'); return; }
+  var byEntry = {}, byJudge = {};
+  r.votes.forEach(function(v){
+    if (!v.flavor) return;
+    (byEntry[v.n] = byEntry[v.n] || {n:v.n, sum:0, c:0, resin:0, rosin:0}); byEntry[v.n].sum += Number(v.flavor); byEntry[v.n].c++; if (v.method) byEntry[v.n][v.method]++;
+    (byJudge[v.code] = byJudge[v.code] || {code:v.code, calls:0, right:0}); if (v.method){ byJudge[v.code].calls++; if (key[v.n] && key[v.n] === v.method) byJudge[v.code].right++; }
+  });
+  var total = state.config.entries.length; var keyed = Object.keys(key).length;
+  var entries = Object.values(byEntry).sort(function(a,b){ return b.sum/b.c - a.sum/a.c; });
+  var judges = Object.values(byJudge).map(function(j){ j.submitted = !!(r.cards && r.cards[j.code]); j.passed = keyed === total && j.submitted && j.calls === total && j.right === total; return j; }).sort(function(a,b){ return b.right - a.right; });
+  var h = '<p class="k">Entries by flavor (avg) · ' + r.votes.length + ' votes · key set for ' + keyed + ' of ' + total + '</p><table><tr><th>#</th><th>Avg</th><th>Votes</th><th>Resin / Rosin calls</th><th>Key</th></tr>' +
+    entries.map(function(e){ return '<tr class="tally-row"><td><b>#' + e.n + '</b></td><td>' + (e.sum/e.c).toFixed(2) + '</td><td>' + e.c + '</td><td>' + e.resin + ' / ' + e.rosin + '</td><td>' + (key[e.n]||'') + '</td></tr>'; }).join('') + '</table>' +
+    '<p class="k" style="margin-top:14px">Judges · perfect method run = passed</p><table><tr><th>Judge</th><th>Right</th><th>Card</th><th></th></tr>' +
+    judges.map(function(j){ return '<tr><td>' + j.code + '</td><td>' + j.right + ' / ' + j.calls + '</td><td>' + (j.submitted ? 'in' : 'open') + '</td><td>' + (j.passed ? '<span class="pass">PASSED</span>' : (keyed<total ? 'set full key' : '')) + '</td></tr>'; }).join('') + '</table>';
+  $('tally').innerHTML = h;
+});
+
+/* ---------- boot ---------- */
+(function(){
+  var qs = new URLSearchParams(location.search);
+  var t = qs.get('t');
+  if (DEMO){
+    $('demo').hidden = false;
+    Object.keys(DEMO_TICKETS).forEach(function(c){ var t2 = DEMO_TICKETS[c]; $('demoCodes').insertAdjacentHTML('beforeend', '<div><a href="?t=' + c + '">' + c + '</a> · ' + t2.label + ' · ' + t2.day + ' pass</div>'); });
+  }
+  $('adminBox').hidden = false;
+  if (t){ $('code').value = fmt(t); signIn(t); }
+  else { try { var last = localStorage.getItem('hbtt_sc_code'); if (last){ $('code').value = last; } } catch(e){} }
+  function net(){ if (!navigator.onLine) setStatus('Offline · will retry', true); }
+  window.addEventListener('offline', net);
+})();
+</script>
+</body>
+</html>
