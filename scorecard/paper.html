@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blind Taste Test Scorecard · paper backup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600;700&display=swap">
+<style>
+  @page{size:letter;margin:.5in}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"IBM Plex Mono",Menlo,monospace;color:#111;background:#fff;font-size:11px}
+  .card{width:7.5in;height:10in;padding:0;display:flex;flex-direction:column;page-break-after:always}
+  .top{border-top:5px solid #111;padding-top:6px;display:flex;justify-content:space-between;align-items:flex-end}
+  .top .t{font-family:Anton,Impact,sans-serif;text-transform:uppercase;font-size:22px;line-height:1;letter-spacing:.03em}
+  .top .meta{font-size:10px;letter-spacing:.12em;text-transform:uppercase;text-align:right}
+  .who{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+  .who div{border-bottom:1px solid #111;padding:14px 0 3px}
+  .how{margin-top:8px;font-size:10px;line-height:1.4;border:1.5px solid #111;padding:6px 8px}
+  .how b{font-weight:700}
+  table{width:100%;border-collapse:collapse;margin-top:8px;flex:1}
+  th,td{border:1px solid #111;padding:0 4px;vertical-align:middle}
+  th{font-size:9px;letter-spacing:.1em;text-transform:uppercase;height:18px;text-align:left}
+  td{height:26px}
+  td.n{font-family:Anton,Impact,sans-serif;font-size:16px;text-align:center;width:38px}
+  td.scale{width:190px}
+  .boxes{display:flex;gap:2px;justify-content:space-between}
+  .boxes span{width:16px;height:16px;border:1.2px solid #111;display:grid;place-items:center;font-size:8px}
+  td.m{width:132px}
+  .mm{display:flex;gap:6px;align-items:center;font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+  .mm i{width:14px;height:14px;border:1.5px solid #111;display:inline-block;margin-right:3px;vertical-align:middle}
+  .foot{margin-top:6px;display:flex;justify-content:space-between;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+  .print{position:fixed;top:10px;right:10px;font:600 12px "IBM Plex Mono",monospace;padding:8px 12px}
+  @media print{.print{display:none}}
+</style>
+</head>
+<body>
+<button class="print" onclick="window.print()">Print</button>
+<div id="cards"></div>
+<script>
+  var N = parseInt(new URLSearchParams(location.search).get('n') || '20', 10);
+  var copies = parseInt(new URLSearchParams(location.search).get('copies') || '1', 10);
+  var day = new URLSearchParams(location.search).get('day') || '';
+  function card(){
+    var rows = '';
+    for (var i = 1; i <= N; i++){
+      rows += '<tr><td class="n">' + String(i).padStart(2,'0') + '</td><td class="scale"><div class="boxes">' + Array.from({length:10},function(_,k){ return '<span>' + (k+1) + '</span>'; }).join('') + '</div></td>' +
+              '<td class="m"><div class="mm"><span><i></i>Resin</span><span><i></i>Rosin</span></div></td><td></td></tr>';
+    }
+    return '<div class="card"><div class="top"><div class="t">Blind Taste Test Scorecard</div><div class="meta">Paper backup · ' + (day || 'Sat / Sun') + ' · Oct 10 + 11, 2026<br>Hand to a floor lead when done</div></div>' +
+      '<div class="who"><div>Name</div><div>Judge code (on your ticket)</div><div>Day</div></div>' +
+      '<div class="how"><b>Flavor 1 to 10.</b> 10 is the best dab of your life, 1 is trash. <b>Then the call:</b> live resin or live rosin, one box per entry. Every box right passes the test. Nobody ever has. Staff enters this card into the system, your code links it to your ticket.</div>' +
+      '<table><tr><th>#</th><th>Flavor</th><th>Method</th><th>Notes</th></tr>' + rows + '</table>' +
+      '<div class="foot"><span>Presale only · 21+ · Private event</span><span>@hitmanblindtastetest · @reservethereserve</span></div></div>';
+  }
+  var h = ''; for (var c = 0; c < copies; c++) h += card();
+  document.getElementById('cards').innerHTML = h;
+</script>
+</body>
+</html>

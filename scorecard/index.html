@@ -17,7 +17,7 @@
   header .t{font-family:var(--wordmark);text-transform:uppercase;font-size:22px;letter-spacing:.04em;line-height:1}
   header .t b{color:var(--amber);font-weight:400}
   header .who{text-align:right;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  header .who b{display:block;color:var(--ink);font-size:13px}
+  header .who b{display:block;color:var(--ink);font-size:16px;letter-spacing:.02em;text-transform:none}
   .card{background:var(--panel);border:2px solid var(--rule);border-radius:6px;padding:16px}
   .k{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
   h1{font-family:var(--wordmark);font-weight:400;text-transform:uppercase;font-size:34px;line-height:1;margin:6px 0 10px;letter-spacing:.02em}
@@ -56,6 +56,7 @@
   .foot .st{flex:1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
   .foot .st.off{color:var(--bad)}
   .foot .btn{width:auto;padding:12px 18px}
+  .foot .btn.ghost{padding:12px 14px;border-color:var(--amber);color:var(--amber)}
   .locked{border-color:var(--ok)}
   .locked h1{font-size:30px}
   details{border:2px solid var(--rule);border-radius:6px;padding:12px 14px}
@@ -90,6 +91,11 @@
       <div style="height:10px"></div>
       <button class="btn" type="submit" id="gateBtn">Start scoring</button>
     </form>
+    <div id="kioskScan" hidden>
+      <div style="height:10px"></div>
+      <button class="btn ghost" type="button" id="scanBtn">Scan the QR on your ticket</button>
+      <div id="kreader" style="margin-top:10px;border-radius:6px;overflow:hidden"></div>
+    </div>
   </section>
 
   <!-- 2. Scoring -->
@@ -108,6 +114,7 @@
     <h1>Your card is <b>in.</b></h1>
     <p id="doneMsg">The key gets unsealed on stage at 10 PM. If every one of your calls is right, you passed the test. Nobody ever has.</p>
     <p class="k">Keep your ticket. You will need it to claim the vault.</p>
+    <button class="btn" type="button" id="doneOut" hidden style="margin-top:10px">Finished voting · Exit</button>
   </section>
 
   <!-- Demo panel -->
@@ -138,6 +145,7 @@
 <div class="foot" id="foot" hidden>
   <div class="in">
     <div class="st" id="st">Saved</div>
+    <button class="btn ghost" id="outBtn" type="button" hidden>Finished voting · Exit</button>
     <button class="btn" id="submitBtn" type="button" disabled>Submit card</button>
   </div>
 </div>
@@ -152,7 +160,8 @@
 var API = (new URLSearchParams(location.search).get('api')) || '';
 var DEMO = !API;
 
-var DEMO_TICKETS = { 'HBTT-DEMO-0001':{day:'Saturday',label:'Judge 1'}, 'HBTT-DEMO-0002':{day:'Saturday',label:'Judge 2'}, 'HBTT-DEMO-0003':{day:'Sunday',label:'Judge 3'} };
+var DEMO_TICKETS = { 'HBTT-DEMO-0001':{day:'Saturday',name:'Alex Rivera'}, 'HBTT-DEMO-0002':{day:'Saturday',name:'Jordan Blake'}, 'HBTT-DEMO-0003':{day:'Sunday',name:'Sam Okafor'} };
+var KIOSK = new URLSearchParams(location.search).get('kiosk') === '1';
 var DEMO_CONFIG = { day:'Saturday', open:true, entries: Array.from({length:20}, function(_,i){ return {n:i+1}; }) };
 
 var $ = function(id){ return document.getElementById(id); };
@@ -178,7 +187,7 @@ function demoApi(action, p){
   if (action === 'ticket'){
     var t = DEMO_TICKETS[(p.code||'').toUpperCase()];
     if (!t) return {ok:false, error:'No judge with that code. Check the code under the QR on your ticket.'};
-    return {ok:true, day:t.day, label:t.label, submitted: !!s.cards[p.code], votes: Object.values(s.votes).filter(function(v){ return v.code === p.code; })};
+    return {ok:true, day:t.day, name:t.name, submitted: !!s.cards[p.code], votes: Object.values(s.votes).filter(function(v){ return v.code === p.code; })};
   }
   if (action === 'vote'){ s.votes[p.code + '_' + p.n] = {code:p.code, n:p.n, flavor:p.flavor, method:p.method, notes:p.notes, at:Date.now()}; demoSave(s); return {ok:true}; }
   if (action === 'submit'){ s.cards[p.code] = Date.now(); demoSave(s); return {ok:true}; }
@@ -204,8 +213,8 @@ async function signIn(code){
     if (t.day && cfg.day && t.day !== cfg.day) throw new Error('This pass is for ' + t.day + '. Today is ' + cfg.day + '. Come back on your day.');
     state.code = code; state.ticket = t; state.submitted = !!t.submitted; state.votes = {};
     (t.votes || []).forEach(function(v){ state.votes[v.n] = v; });
-    try { localStorage.setItem('hbtt_sc_code', code); } catch(e){}
-    $('who').innerHTML = (t.label ? t.label : 'Judge') + '<b>' + code + '</b>';
+    if (!KIOSK){ try { localStorage.setItem('hbtt_sc_code', code); } catch(e){} }
+    $('who').innerHTML = '<b>' + escapeHtml(t.name || 'Judge') + '</b>' + code;
     $('gate').hidden = true;
     if (state.submitted){ showDone(); } else { renderEntries(); $('score').hidden = false; $('foot').hidden = false; }
   }catch(err){ $('gateErr').textContent = err.message; $('gateErr').hidden = false; }
@@ -269,7 +278,26 @@ $('submitBtn').addEventListener('click', async function(){
   if (!r.ok){ alert(r.error || 'Could not submit. Find a floor lead.'); return; }
   state.submitted = true; showDone();
 });
-function showDone(){ $('score').hidden = true; $('foot').hidden = true; $('done').hidden = false; }
+function showDone(){ $('score').hidden = true; $('foot').hidden = true; $('done').hidden = false; if (KIOSK){ $('doneOut').hidden = false; kioskIdle(20000); } }
+function signOut(){ state.code = null; state.ticket = null; state.votes = {}; state.submitted = false; $('who').innerHTML = ''; $('code').value = ''; $('score').hidden = true; $('foot').hidden = true; $('done').hidden = true; $('gate').hidden = false; window.scrollTo(0,0); }
+var idleT;
+function kioskIdle(ms){ clearTimeout(idleT); if (KIOSK) idleT = setTimeout(function(){ if (state.code) signOut(); }, ms || 120000); }
+if (KIOSK){ ['click','touchstart','input','scroll'].forEach(function(ev){ document.addEventListener(ev, function(){ if (state.code && !state.submitted) kioskIdle(120000); }, {passive:true}); }); }
+$('outBtn').addEventListener('click', function(){ if (confirm('Exit? Your scores are saved. Enter your code on any iPad or your phone to keep going.')) signOut(); });
+$('doneOut').addEventListener('click', signOut);
+$('scanBtn').addEventListener('click', function(){
+  var b = $('scanBtn'); b.disabled = true; b.textContent = 'Starting camera…';
+  function go(){
+    try{
+      var q = new Html5Qrcode('kreader');
+      q.start({facingMode:'environment'}, {fps:10, qrbox:220}, function(text){
+        var code = text; try { var u = new URL(text); code = u.searchParams.get('t') || u.searchParams.get('uid') || text; } catch(e){}
+        q.stop().then(function(){ $('kreader').innerHTML = ''; b.disabled = false; b.textContent = 'Scan the QR on your ticket'; }); signIn(code);
+      }, function(){});
+    }catch(e){ b.disabled = false; b.textContent = 'Camera unavailable, type your code'; }
+  }
+  if (window.Html5Qrcode) go(); else { var sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js'; sc.onload = go; sc.onerror = function(){ b.disabled = false; b.textContent = 'Camera unavailable, type your code'; }; document.head.appendChild(sc); }
+});
 
 /* ---------- organizer ---------- */
 $('adminGo').addEventListener('click', async function(){
@@ -309,11 +337,12 @@ $('tallyBtn').addEventListener('click', async function(){
   var t = qs.get('t');
   if (DEMO){
     $('demo').hidden = false;
-    Object.keys(DEMO_TICKETS).forEach(function(c){ var t2 = DEMO_TICKETS[c]; $('demoCodes').insertAdjacentHTML('beforeend', '<div><a href="?t=' + c + '">' + c + '</a> · ' + t2.label + ' · ' + t2.day + ' pass</div>'); });
+    Object.keys(DEMO_TICKETS).forEach(function(c){ var t2 = DEMO_TICKETS[c]; $('demoCodes').insertAdjacentHTML('beforeend', '<div><a href="?t=' + c + (KIOSK ? '&kiosk=1' : '') + '">' + c + '</a> · ' + t2.name + ' · ' + t2.day + ' pass</div>'); });
   }
-  $('adminBox').hidden = false;
+  $('adminBox').hidden = !KIOSK ? false : true;
+  if (KIOSK){ $('kioskScan').hidden = false; $('outBtn').hidden = false; document.querySelector('#gate p').textContent = 'Voting station. Enter the judge code from your ticket email, or scan your ticket QR, and your card comes up. Tap Finished voting when you are done so the next judge can use this iPad.'; }
   if (t){ $('code').value = fmt(t); signIn(t); }
-  else { try { var last = localStorage.getItem('hbtt_sc_code'); if (last){ $('code').value = last; } } catch(e){} }
+  else if (!KIOSK) { try { var last = localStorage.getItem('hbtt_sc_code'); if (last){ $('code').value = last; } } catch(e){} }
   function net(){ if (!navigator.onLine) setStatus('Offline · will retry', true); }
   window.addEventListener('offline', net);
 })();
