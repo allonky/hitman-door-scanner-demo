@@ -8,7 +8,7 @@
 <title>Hitman BTT Scorecard</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;600;700&display=swap">
 <style>
-  :root{--bg:#17120D;--panel:#1f1913;--ink:#EDE6D8;--muted:#A89C8B;--rule:#453C31;--amber:#E0A33E;--ok:#3fae5a;--bad:#ff8c84;--resin:#7fb3ff;--rosin:#e0a33e;
+  :root{--bg:#17120D;--panel:#1f1913;--ink:#EDE6D8;--muted:#A89C8B;--rule:#453C31;--amber:#E0A33E;--ok:#3fae5a;--bad:#ff8c84;--resin:#e0a33e;--rosin:#5fa8ff;
     --mono:"IBM Plex Mono",Menlo,monospace;--wordmark:"Anton",Impact,"Arial Narrow",sans-serif}
   *{box-sizing:border-box} html{color-scheme:dark}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
@@ -153,7 +153,7 @@ var API = (new URLSearchParams(location.search).get('api')) || '';
 var DEMO = !API;
 
 var DEMO_TICKETS = { 'HBTT-DEMO-0001':{day:'Saturday',label:'Judge 1'}, 'HBTT-DEMO-0002':{day:'Saturday',label:'Judge 2'}, 'HBTT-DEMO-0003':{day:'Sunday',label:'Judge 3'} };
-var DEMO_CONFIG = { day:'Saturday', open:true, entries: Array.from({length:12}, function(_,i){ return {n:i+1}; }) };
+var DEMO_CONFIG = { day:'Saturday', open:true, entries: Array.from({length:20}, function(_,i){ return {n:i+1}; }) };
 
 var $ = function(id){ return document.getElementById(id); };
 var state = { code:null, ticket:null, config:null, votes:{}, submitted:false, queue:[] };
